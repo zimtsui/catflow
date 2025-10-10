@@ -20,7 +20,7 @@ export namespace Draft {
 	export async function *mu<t>(draftdraft: Draft<Draft<t>>): Draft<t> {
 		for (let draft = await draftdraft.next().then(r => r.value);;) try {
 			for (let final = await draft.next().then(r => r.value);;) try {
-				yield final;
+				return yield final;
 			} catch (e) {
 				final = await draft.throw(e).then(r => r.value);
 			}
@@ -35,7 +35,7 @@ export namespace Draft {
 	export function map<i, o>(f: (i: i) => o): (draft: Draft<i>) => Draft<o> {
 		return async function *(draft: Draft<i>) {
 			for (let final = await draft.next().then(r => r.value);;) try {
-				yield f(final);
+				return yield f(final);
 			} catch (e) {
 				final = await draft.throw(e).then(r => r.value);
 			}
