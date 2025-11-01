@@ -56,11 +56,11 @@ export async function *solve(problem: string): Draft<string> {
 	];
 	for (;;) {
 		const completion = await openai.chat.completions.create({ model: 'gpt-4o', messages });
+		messages.push({ role: 'assistant', content: completion.choices[0]!.message.content! });
 		try {
 			return yield completion.choices[0]!.message.content!;
 		} catch (e) {
 			if (e instanceof Error) {} else throw e;
-			messages.push({ role: 'assistant', content: completion.choices[0]!.message.content! });
 			messages.push({ role: 'user', content: `Please revise your answer upon the feedback: ${e.message}` });
 		}
 	}
@@ -156,19 +156,19 @@ import { Controlflow, type Draft } from '@zimtsui/amenda';
 declare function generateCode(): Draft<string>;
 declare function syntaxCheck(code: string): void;
 
-async function *evaluator(optimization: Draft<string>): Draft<string> {
-	for (let r = await optimization.next(), feedback: unknown;; r = await optimization.throw(feedback)) try {
-		const code = r.value;
+async function *evaluate(optimization: Draft<string>): Draft<string> {
+	let code = await optimization.next().then(r => r.value);
+	for (;;) try {
 		syntaxCheck(code);
 		return yield code;
-	} catch (e) {
-		feedback = e;
+	} catch (syntaxError) {
+		code = await optimization.throw(syntaxError).then(r => r.value);
 	}
 }
 
 const cf = Controlflow.create()
 	.then(generateCode)
-	.pipe(evaluator)	// append an evaluator
+	.pipe(evaluate)	// append an evaluator
 ;
 export default await cf.first();
 ```
