@@ -53,7 +53,7 @@ export type Evaluator<i, o> = (optimization: Draft<i>) => Draft<o>;
 
 An async generator function which returns a `Draft` is a morphism of the Kleisli category of draft monad.
 
-一个返回 `Draft` 的异步生成器函数本质上是一个草稿单子的 Kleisli 范畴中的态射。
+一个返回 `Draft` 的异步生成器函数是一个草稿单子的 Kleisli 范畴中的态射。
 
 ```ts
 export type Kleisli<i, o> = (i: i) => Draft<o>;
