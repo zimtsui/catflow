@@ -1,4 +1,4 @@
-import { optimize } from './optimize.ts';
+import { optimize } from '../multiple-evaluators/optimize.ts';
 import { evaluate as evaluate1 } from './evaluate.ts';
 import { Controlflow, Draft } from '@zimtsui/amenda';
 declare const evaluate2: typeof evaluate1;

@@ -2,7 +2,7 @@
 
 [![Npm package version](https://img.shields.io/npm/v/@zimtsui/amenda?style=flat-square)](https://www.npmjs.com/package/@zimtsui/amenda)
 
-Almost all workflow orchestrators are based on Graph Theory, e.g. LangChain, LangGraph, Airflow, etc. While **Amenda** is one based on Category Theory, and is powered by the most native capabilities of TypeScript.
+Almost all workflow orchestrators are based on Graph Theory, e.g. LangChain, LangGraph, Airflow, etc. While Amenda is one based on Category Theory, and is powered by the most native capabilities of TypeScript.
 
 - [Rationale](#rationale)
 - [Concept](#concept)
@@ -11,12 +11,14 @@ Almost all workflow orchestrators are based on Graph Theory, e.g. LangChain, Lan
 - [Basic Orchestrations](#basic-orchestrations)
 	- [Conditional](#conditional)
 	- [Loop](#loop)
-	- [Design Pattern of *Optimizer Evaluator*](#design-pattern-of-optimizer-evaluator)
 	- [Parallel](#parallel)
 - [Advanced Orchestrations](#advanced-orchestrations)
-	- [Design Pattern of *Single Optimizer - Multiple Evaluators*](#design-pattern-of-single-optimizer---multiple-evaluators)
-	- [Design Pattern of *Single Optimizer - Multiple Stateful Evaluators*](#design-pattern-of-single-optimizer---multiple-stateful-evaluators)
-	- [Design Pattern of *Single Optimizer - Multiple Stateful Opposable Evaluators*](#design-pattern-of-single-optimizer---multiple-stateful-opposable-evaluators)
+	- [Design Pattern of *Optimizer - Evaluator*](#design-pattern-of-optimizer---evaluator)
+	- [Design Pattern of *Optimizer - Stateful Evaluator*](#design-pattern-of-optimizer---stateful-evaluator)
+	- [Design Pattern of *Optimizer - Opposable Evaluator*](#design-pattern-of-optimizer---opposable-evaluator)
+	- [Design Pattern of *Optimizer - Multiple Evaluators*](#design-pattern-of-optimizer---multiple-evaluators)
+	- [Design Pattern of *Optimizer - Multiple Stateful Evaluators*](#design-pattern-of-optimizer---multiple-stateful-evaluators)
+	- [Design Pattern of *Optimizer - Multiple Stateful Opposable Evaluators*](#design-pattern-of-optimizer---multiple-stateful-opposable-evaluators)
 	- [Progress Log](#progress-log)
 - [Explanation of Amenda in Mathematics](#explanation-of-amenda-in-mathematics)
 	- [Functor of Draft 草稿函子](#functor-of-draft-草稿函子)
@@ -186,31 +188,6 @@ const cf = Controlflow.from('What does 1+1 equal to ?')
 export default await cf.first();
 ```
 
-### [Design Pattern of *Optimizer Evaluator*](https://www.anthropic.com/engineering/building-effective-agents)
-
-```ts
-import { Controlflow, type Draft } from '@zimtsui/amenda';
-
-declare function generateCode(): Draft<string>;
-declare function syntaxCheck(code: string): void;
-
-async function *evaluate(optimization: Draft<string>): Draft<string> {
-	let code = await optimization.next().then(r => r.value);
-	for (;;) try {
-		syntaxCheck(code);
-		return yield code;
-	} catch (syntaxError) {
-		code = await optimization.throw(syntaxError).then(r => r.value);
-	}
-}
-
-const cf = Controlflow.create()
-	.then(generateCode)
-	.pipe(evaluate)	// append an evaluator
-;
-export default await cf.first();
-```
-
 ### Parallel
 
 ```ts
@@ -236,7 +213,7 @@ export default await cf.first();
 
 ## Advanced Orchestrations
 
-### Design Pattern of *Single Optimizer - Multiple Evaluators*
+### [Design Pattern of *Optimizer - Evaluator*](https://www.anthropic.com/engineering/building-effective-agents)
 
 #### Optimizer
 
@@ -279,7 +256,13 @@ declare const openai: OpenAI;
 
 export async function *evaluate(problem: string, answer: string): Draft<string> {
 	const messages: OpenAI.ChatCompletionMessageParam[] = [
-		{ role: 'system', content: 'Please examine the given answer of the given math problem. Print `ACCEPT` if it is correct.' },
+		{
+			role: 'system',
+			content: [
+				'Please examine the given answer of the given math problem.',
+				'Print only `ACCEPT` if it is correct.',
+			].join(' '),
+		},
 		{ role: 'user', content: `Problem: ${problem}\n\nAnswer: ${answer}` },
 	];
 	const completion = await openai.chat.completions.create({ model: 'gpt-4o', messages });
@@ -293,20 +276,16 @@ export async function *evaluate(problem: string, answer: string): Draft<string> 
 
 ```ts
 import { optimize } from './optimize.ts';
-import { evaluate as evaluate1 } from './evaluate.ts';
+import { evaluate } from './evaluate.ts';
 import { Controlflow, Draft } from '@zimtsui/amenda';
-declare const evaluate2: typeof evaluate1;
-declare const evaluate3: typeof evaluate1;
 
 export const workflow = (problem: string) => Controlflow.from(problem)
     .then(optimize)
-    .then(draft => evaluate1(problem, draft))
-    .then(draft => evaluate2(problem, draft))
-    .then(draft => evaluate3(problem, draft))
+    .then(answer => evaluate(problem, answer))
 .draft satisfies Draft<string>;
 ```
 
-### Design Pattern of *Single Optimizer - Multiple Stateful Evaluators*
+### Design Pattern of *Optimizer - Stateful Evaluator*
 
 #### Evaluator
 
@@ -318,7 +297,13 @@ declare const openai: OpenAI;
 export async function *evaluate(problem: string, draft: Draft<string>): Draft<string> {
 	let answer = await draft.next().then(r => r.value);
 	const messages: OpenAI.ChatCompletionMessageParam[] = [
-		{ role: 'system', content: 'Please examine the given answer of the given math problem. Print `ACCEPT` if it is correct.' },
+		{
+			role: 'system',
+			content: [
+				'Please examine the given answer of the given math problem.',
+				'Print `ACCEPT` if it is correct.',
+			].join(' '),
+		},
 		{ role: 'user', content: `Problem: ${problem}\n\nAnswer: ${answer}` },
 	];
 	for (;;) try {
@@ -340,20 +325,16 @@ export async function *evaluate(problem: string, draft: Draft<string>): Draft<st
 
 ```ts
 import { optimize } from './optimize.ts';
-import { evaluate as evaluate1 } from './evaluate.ts';
+import { evaluate } from './evaluate.ts';
 import { Controlflow, Draft } from '@zimtsui/amenda';
-declare const evaluate2: typeof evaluate1;
-declare const evaluate3: typeof evaluate1;
 
 export const workflow = (problem: string) => Controlflow.from(problem)
     .then(optimize)
-    .pipe(draft => evaluate1(problem, draft))
-    .pipe(draft => evaluate2(problem, draft))
-    .pipe(draft => evaluate3(problem, draft))
+    .pipe(draft => evaluate(problem, draft))
 .draft satisfies Draft<string>;
 ```
 
-### Design Pattern of *Single Optimizer - Multiple Stateful Opposable Evaluators*
+### Design Pattern of *Optimizer - Opposable Evaluator*
 
 #### Optimizer
 
@@ -392,6 +373,97 @@ export async function *optimize(problem: string): Draft<string | Error> {
     }
 }
 ```
+
+#### Evaluator
+
+```ts
+import { Draft } from '@zimtsui/amenda';
+import OpenAI from 'openai';
+declare const openai: OpenAI;
+
+export async function *evaluate(problem: string, draft: Draft<string | Error>): Draft<string | Error> {
+	let input = await draft.next().then(r => r.value);
+	let answer = input as string;
+	const messages: OpenAI.ChatCompletionMessageParam[] = [
+		{
+			role: 'system',
+			content: [
+				'Please examine the given answer of the given math problem.',
+				'Print only `ACCEPT` if it is correct.',
+			].join(' '),
+		},
+		{ role: 'user', content: `Problem: ${problem}\n\nAnswer: ${answer}` },
+	];
+	for (;;) try {
+		const completion = await openai.chat.completions.create({ model: 'gpt-4o', messages });
+		messages.push(completion.choices[0]!.message);
+		if (completion.choices[0]!.message.content === 'ACCEPT') return yield answer;
+		else throw new Error(completion.choices[0]!.message.content!);
+	} catch (e) {
+		input = await draft.throw(e as Error).then(r => r.value);
+		if (input instanceof Error) messages.push({
+			role: 'user',
+			content: `Your rejection is opposed: ${input.message}\n\nPlease examine it again.`,
+		}); else messages.push({
+			role: 'user',
+			content: `The answer is revised: ${answer = input}\n\nPlease examine it again.`,
+		});
+	}
+}
+```
+
+#### Workflow
+
+```ts
+import { optimize } from './optimize.ts';
+import { evaluate } from './evaluate.ts';
+import { Controlflow, Draft } from '@zimtsui/amenda';
+
+export const workflow = (problem: string) => Controlflow.from(problem)
+    .then(optimize)
+    .pipe(draft => evaluate(problem, draft))
+.draft satisfies Draft<string | Error>;
+```
+
+### Design Pattern of *Optimizer - Multiple Evaluators*
+
+#### Workflow
+
+```ts
+import { optimize } from './optimize.ts';
+import { evaluate as evaluate1 } from './evaluate.ts';
+import { Controlflow, Draft } from '@zimtsui/amenda';
+declare const evaluate2: typeof evaluate1;
+declare const evaluate3: typeof evaluate1;
+
+export const workflow = (problem: string) => Controlflow.from(problem)
+    .then(optimize)
+    .then(draft => evaluate1(problem, draft))
+    .then(draft => evaluate2(problem, draft))
+    .then(draft => evaluate3(problem, draft))
+.draft satisfies Draft<string>;
+```
+
+### Design Pattern of *Optimizer - Multiple Stateful Evaluators*
+
+#### Workflow
+
+```ts
+import { optimize } from '../multiple-evaluators/optimize.ts';
+import { evaluate as evaluate1 } from './evaluate.ts';
+import { Controlflow, Draft } from '@zimtsui/amenda';
+declare const evaluate2: typeof evaluate1;
+declare const evaluate3: typeof evaluate1;
+
+export const workflow = (problem: string) => Controlflow.from(problem)
+    .then(optimize)
+    .pipe(draft => evaluate1(problem, draft))
+    .pipe(draft => evaluate2(problem, draft))
+    .pipe(draft => evaluate3(problem, draft))
+.draft satisfies Draft<string>;
+```
+
+### Design Pattern of *Optimizer - Multiple Stateful Opposable Evaluators*
 
 #### Evaluator
 
