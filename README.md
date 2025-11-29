@@ -9,7 +9,7 @@ Almost all workflow orchestrators are based on Graph Theory, e.g. LangChain, Lan
 	- [Workflow Node](#workflow-node)
 	- [Controlflow](#controlflow)
 - [Basic Orchestrations](#basic-orchestrations)
-	- [Conditional Workflow](#conditional-workflow)
+	- [Conditional](#conditional)
 	- [Loop](#loop)
 	- [Design Pattern of *Optimizer Evaluator*](#design-pattern-of-optimizer-evaluator)
 	- [Parallel](#parallel)
@@ -141,23 +141,23 @@ export default await cf.first();
 
 ## Basic Orchestrations
 
-### Conditional Workflow
+### Conditional
 
 ```ts
 import { Controlflow, type Draft } from '@zimtsui/amenda';
 
 declare const determineLanguage: (text: string) => Promise<'Chinese' | 'Russian' | 'English'>;
-declare const translateChineseToEnglish: (chineseText: string) => Draft<string>;
-declare const translateRussianToEnglish: (russianText: string) => Draft<string>;
+declare const translateEnglishToChinese: (englishText: string) => Draft<string>;
+declare const translateRussianToChinese: (russianText: string) => Draft<string>;
 declare const solveEnglishMathProblem: (englishMathProblem: string) => Draft<string>;
 
-const cf = Controlflow.from('1+1 等于几？')
+const cf = Controlflow.from('What does 1+1 equal to ?')
 	.then(async function *(mathProblem: string): Draft<string> {
 		switch (await determineLanguage(mathProblem)) {
-			case 'Chinese': return yield *translateChineseToEnglish(mathProblem); break;
-			case 'Russian': return yield *translateRussianToEnglish(mathProblem); break;
-			case 'English': return yield mathProblem; break;
-			default: throw new Error('Language Not Supported'); break;
+			case 'English': return yield *translateEnglishToChinese(mathProblem);
+			case 'Russian': return yield *translateRussianToChinese(mathProblem);
+			case 'Chinese': return yield mathProblem;
+			default: throw new Error('Language Not Supported');
 		}
 	}).then(solveEnglishMathProblem)
 ;
@@ -169,17 +169,18 @@ export default await cf.first();
 ```ts
 import { Controlflow, type Draft } from '@zimtsui/amenda';
 
-declare const translateChineseToEnglish: (chineseText: string) => Draft<string>;
 declare const translateEnglishToRussian: (englishText: string) => Draft<string>;
 declare const translateRussianToChinese: (russianText: string) => Draft<string>;
+declare const translateChineseToEnglish: (chineseText: string) => Draft<string>;
 
-const cf = Controlflow.from('1+1 等于几？')
-	.then((chinese: string) => {
-		let cf = Controlflow.from(chinese);
+const cf = Controlflow.from('What does 1+1 equal to ?')
+	.then((mathProblemInEnglish: string) => {
+		let cf = Controlflow.from(mathProblemInEnglish);
 		for (let i = 1; i <= 3; i++) cf = cf
-			.then(translateChineseToEnglish)
 			.then(translateEnglishToRussian)
-			.then(translateRussianToChinese);
+			.then(translateRussianToChinese)
+			.then(translateChineseToEnglish)
+		;
 		return cf.draft;
 	});
 export default await cf.first();
@@ -215,16 +216,20 @@ export default await cf.first();
 ```ts
 import { Controlflow, type Draft } from '@zimtsui/amenda';
 
-declare const translateChineseToEnglish: (chineseText: string) => Draft<string>;
-declare const translateChineseToRussian: (chineseText: string) => Draft<string>;
+declare const translateEnglishToChinese: (englishText: string) => Draft<string>;
+declare const translateEnglishToRussian: (englishText: string) => Draft<string>;
 
-const cf = Controlflow.from('1+1 等于几？')
-	.transform(async (chinese: string) => {
-		const [english, russian] = await Promise.all([
-			Controlflow.from(chinese).then(translateChineseToEnglish).first(),
-			Controlflow.from(chinese).then(translateChineseToRussian).first(),
+const cf = Controlflow.from('What does 1+1 equal to ?')
+	.transform(async (mathProblemInEnglish: string) => {
+		const [mathProblemInChinese, mathProblemInRussian] = await Promise.all([
+			Controlflow.from(mathProblemInEnglish).then(translateEnglishToChinese).first(),
+			Controlflow.from(mathProblemInEnglish).then(translateEnglishToRussian).first(),
 		]);
-		return `# Chinese: ${chinese}\n\n# English: ${english}\n\n# Russian: ${russian}`;
+		return [
+			`# English: ${mathProblemInEnglish}`,
+			`# Chinese: ${mathProblemInChinese}`,
+			`# Russian: ${mathProblemInRussian}`,
+		].join('\n\n');
 	});
 export default await cf.first();
 ```

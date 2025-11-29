@@ -1,14 +1,18 @@
 import { Controlflow, type Draft } from '@zimtsui/amenda';
 
-declare const translateChineseToEnglish: (chineseText: string) => Draft<string>;
-declare const translateChineseToRussian: (chineseText: string) => Draft<string>;
+declare const translateEnglishToChinese: (englishText: string) => Draft<string>;
+declare const translateEnglishToRussian: (englishText: string) => Draft<string>;
 
-const cf = Controlflow.from('1+1 等于几？')
-	.transform(async (chinese: string) => {
-		const [english, russian] = await Promise.all([
-			Controlflow.from(chinese).then(translateChineseToEnglish).first(),
-			Controlflow.from(chinese).then(translateChineseToRussian).first(),
+const cf = Controlflow.from('What does 1+1 equal to ?')
+	.transform(async (mathProblemInEnglish: string) => {
+		const [mathProblemInChinese, mathProblemInRussian] = await Promise.all([
+			Controlflow.from(mathProblemInEnglish).then(translateEnglishToChinese).first(),
+			Controlflow.from(mathProblemInEnglish).then(translateEnglishToRussian).first(),
 		]);
-		return `# Chinese: ${chinese}\n\n# English: ${english}\n\n# Russian: ${russian}`;
+		return [
+			`# English: ${mathProblemInEnglish}`,
+			`# Chinese: ${mathProblemInChinese}`,
+			`# Russian: ${mathProblemInRussian}`,
+		].join('\n\n');
 	});
 export default await cf.first();
