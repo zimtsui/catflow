@@ -15,10 +15,11 @@ export async function *evaluate(problem: string, draft: Draft<string | Error>): 
 		if (completion.choices[0]!.message.content === 'ACCEPT') return yield (evaluating = false, answer);
 		else throw new Error(completion.choices[0]!.message.content!);
 	} catch (e) {
-		for (;;) try {
+		for (;;) {
 			input = await draft.throw(e as Error).then(r => r.value);
-			if (input instanceof Error && !evaluating) return yield input; else break;
-		} catch (newe) { e = newe; }
+			if (input instanceof Error && !evaluating) {} else break;
+			try { return yield input; } catch (newe) { e = newe; }
+		}
 		if (input instanceof Error) messages.push({
 			role: 'user',
 			content: `Your rejection is opposed: ${input.message}\n\nPlease examine it again.`,
