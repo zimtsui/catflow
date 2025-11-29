@@ -1,5 +1,5 @@
 {
-  "name": "@zimtsui/amenda",
+  "name": "@zimtsui/catflow",
   "description": "An AI workflow orchestrator powered by the most native capabilities of TypeScript.",
   "keywords": [
     "ai",
@@ -12,7 +12,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zimtsui/amenda.git"
+    "url": "https://github.com/zimtsui/catflow.git"
   },
   "scripts": {
     "test": "npm run build && ava",

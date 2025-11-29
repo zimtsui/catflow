@@ -1,4 +1,4 @@
-import { Draft, Finalized, Controlflow } from '@zimtsui/amenda';
+import { Draft, Finalized, Controlflow } from '@zimtsui/catflow';
 
 function beginning(nextStage: string) {
 	return async function *<input>(input: input): Draft<input> {

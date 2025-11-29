@@ -1,4 +1,4 @@
-import { Controlflow, type Draft } from '@zimtsui/amenda';
+import { Controlflow, type Draft } from '@zimtsui/catflow';
 
 declare const determineLanguage: (text: string) => Promise<'Chinese' | 'Russian' | 'English'>;
 declare const translateEnglishToChinese: (englishText: string) => Draft<string>;

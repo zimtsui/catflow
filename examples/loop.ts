@@ -1,4 +1,4 @@
-import { Controlflow, type Draft } from '@zimtsui/amenda';
+import { Controlflow, type Draft } from '@zimtsui/catflow';
 
 declare const translateEnglishToRussian: (englishText: string) => Draft<string>;
 declare const translateRussianToChinese: (russianText: string) => Draft<string>;

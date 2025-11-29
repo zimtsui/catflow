@@ -1,4 +1,4 @@
-import { Controlflow, type Draft } from '@zimtsui/amenda';
+import { Controlflow, type Draft } from '@zimtsui/catflow';
 
 declare function generateCode(): Draft<string>;
 declare function syntaxCheck(code: string): void;

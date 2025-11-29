@@ -1,8 +1,8 @@
-# Amenda
+# Catflow
 
-[![Npm package version](https://img.shields.io/npm/v/@zimtsui/amenda?style=flat-square)](https://www.npmjs.com/package/@zimtsui/amenda)
+[![Npm package version](https://img.shields.io/npm/v/@zimtsui/catflow?style=flat-square)](https://www.npmjs.com/package/@zimtsui/catflow)
 
-Almost all workflow orchestrators are based on Graph Theory, e.g. LangChain, LangGraph, Airflow, etc. While Amenda is one based on Category Theory, and is powered by the most native capabilities of TypeScript.
+Almost all workflow orchestrators are based on Graph Theory, e.g. LangChain, LangGraph, Airflow, etc. While Catflow is one based on Category Theory, and is powered by the most native capabilities of TypeScript.
 
 - [Rationale](#rationale)
 - [Concept](#concept)
@@ -20,7 +20,7 @@ Almost all workflow orchestrators are based on Graph Theory, e.g. LangChain, Lan
 	- [Design Pattern of *Optimizer - Multiple Stateful Evaluators*](#design-pattern-of-optimizer---multiple-stateful-evaluators)
 	- [Design Pattern of *Optimizer - Multiple Opposable Evaluators*](#design-pattern-of-optimizer---multiple-opposable-evaluators)
 	- [Progress Log](#progress-log)
-- [Explanation of Amenda in Mathematics](#explanation-of-amenda-in-mathematics)
+- [Explanation of Catflow in Mathematics](#explanation-of-catflow-in-mathematics)
 	- [Functor of Draft 草稿函子](#functor-of-draft-草稿函子)
 	- [Natural Transformations of Draft Functor 草稿函子的自然变换](#natural-transformations-of-draft-functor-草稿函子的自然变换)
 	- [Morphisms of Draft Category 草稿范畴的态射](#morphisms-of-draft-category-草稿范畴的态射)
@@ -45,7 +45,7 @@ export type Draft<value> = AsyncGenerator<value, never, never>;
 If the downstream accepts the yielded result, `.throw` of the generator will be called with a `Finalized` exception.
 
 ```ts
-import { Draft } from '@zimtsui/amenda';
+import { Draft } from '@zimtsui/catflow';
 import OpenAI from 'openai';
 declare const openai: OpenAI;
 
@@ -63,7 +63,7 @@ export async function *solve(problem: string): Draft<string> {
 If the downstream rejects the yielded result, the `.throw` of the generator should be called with an exception as feedback. In this case, the node should revise its output and yield a new version.
 
 ```ts
-import { Draft } from '@zimtsui/amenda';
+import { Draft } from '@zimtsui/catflow';
 import OpenAI from 'openai';
 declare const openai: OpenAI;
 
@@ -88,7 +88,7 @@ export async function *solve(problem: string): Draft<string> {
 A node can reject the input by throwing an exception to the upstream.
 
 ```ts
-import { Draft } from '@zimtsui/amenda';
+import { Draft } from '@zimtsui/catflow';
 import OpenAI from 'openai';
 declare const openai: OpenAI;
 
@@ -107,7 +107,7 @@ export async function *solve(problem: string): Draft<string> {
 A node can also yield an exception to the downstream, for example, to oppose the feedback.
 
 ```ts
-import { Draft } from '@zimtsui/amenda';
+import { Draft } from '@zimtsui/catflow';
 import OpenAI from 'openai';
 declare const openai: OpenAI;
 
@@ -130,7 +130,7 @@ export async function *solve(problem: string): Draft<string | Error> {
 A `Controlflow` is a wrapper of nodes. It's intended to compose nodes within a workflow into a larger node.
 
 ```ts
-import { Controlflow, Draft } from '@zimtsui/amenda';
+import { Controlflow, Draft } from '@zimtsui/catflow';
 declare function translateEnglishToChinese(englishText: string): Draft<string>;
 
 const cf = Controlflow.from('What does 1+1 equal to ?')
@@ -146,7 +146,7 @@ export default await cf.first();
 ### Conditional
 
 ```ts
-import { Controlflow, type Draft } from '@zimtsui/amenda';
+import { Controlflow, type Draft } from '@zimtsui/catflow';
 
 declare const determineLanguage: (text: string) => Promise<'Chinese' | 'Russian' | 'English'>;
 declare const translateEnglishToChinese: (englishText: string) => Draft<string>;
@@ -169,7 +169,7 @@ export default await cf.first();
 ### Loop
 
 ```ts
-import { Controlflow, type Draft } from '@zimtsui/amenda';
+import { Controlflow, type Draft } from '@zimtsui/catflow';
 
 declare const translateEnglishToRussian: (englishText: string) => Draft<string>;
 declare const translateRussianToChinese: (russianText: string) => Draft<string>;
@@ -191,7 +191,7 @@ export default await cf.first();
 ### Parallel
 
 ```ts
-import { Controlflow, type Draft } from '@zimtsui/amenda';
+import { Controlflow, type Draft } from '@zimtsui/catflow';
 
 declare const translateEnglishToChinese: (englishText: string) => Draft<string>;
 declare const translateEnglishToRussian: (englishText: string) => Draft<string>;
@@ -218,7 +218,7 @@ export default await cf.first();
 #### Optimizer
 
 ```ts
-import { Draft } from '@zimtsui/amenda';
+import { Draft } from '@zimtsui/catflow';
 import OpenAI from 'openai';
 declare const openai: OpenAI;
 
@@ -250,7 +250,7 @@ export async function *optimize(problem: string): Draft<string> {
 #### Evaluator
 
 ```ts
-import { Draft } from '@zimtsui/amenda';
+import { Draft } from '@zimtsui/catflow';
 import OpenAI from 'openai';
 declare const openai: OpenAI;
 
@@ -277,7 +277,7 @@ export async function *evaluate(problem: string, answer: string): Draft<string> 
 ```ts
 import { optimize } from './optimize.ts';
 import { evaluate } from './evaluate.ts';
-import { Controlflow, Draft } from '@zimtsui/amenda';
+import { Controlflow, Draft } from '@zimtsui/catflow';
 
 export const workflow = (problem: string) => Controlflow.from(problem)
     .then(optimize)
@@ -290,7 +290,7 @@ export const workflow = (problem: string) => Controlflow.from(problem)
 #### Evaluator
 
 ```ts
-import { Draft } from '@zimtsui/amenda';
+import { Draft } from '@zimtsui/catflow';
 import OpenAI from 'openai';
 declare const openai: OpenAI;
 
@@ -326,7 +326,7 @@ export async function *evaluate(problem: string, draft: Draft<string>): Draft<st
 ```ts
 import { optimize } from './optimize.ts';
 import { evaluate } from './evaluate.ts';
-import { Controlflow, Draft } from '@zimtsui/amenda';
+import { Controlflow, Draft } from '@zimtsui/catflow';
 
 export const workflow = (problem: string) => Controlflow.from(problem)
     .then(optimize)
@@ -339,7 +339,7 @@ export const workflow = (problem: string) => Controlflow.from(problem)
 #### Optimizer
 
 ```ts
-import { Draft } from '@zimtsui/amenda';
+import { Draft } from '@zimtsui/catflow';
 import OpenAI from 'openai';
 declare const openai: OpenAI;
 
@@ -377,7 +377,7 @@ export async function *optimize(problem: string): Draft<string | Error> {
 #### Evaluator
 
 ```ts
-import { Draft } from '@zimtsui/amenda';
+import { Draft } from '@zimtsui/catflow';
 import OpenAI from 'openai';
 declare const openai: OpenAI;
 
@@ -417,7 +417,7 @@ export async function *evaluate(problem: string, draft: Draft<string | Error>): 
 ```ts
 import { optimize } from './optimize.ts';
 import { evaluate } from './evaluate.ts';
-import { Controlflow, Draft } from '@zimtsui/amenda';
+import { Controlflow, Draft } from '@zimtsui/catflow';
 
 export const workflow = (problem: string) => Controlflow.from(problem)
     .then(optimize)
@@ -432,7 +432,7 @@ export const workflow = (problem: string) => Controlflow.from(problem)
 ```ts
 import { optimize } from './optimize.ts';
 import { evaluate as evaluate1 } from './evaluate.ts';
-import { Controlflow, Draft } from '@zimtsui/amenda';
+import { Controlflow, Draft } from '@zimtsui/catflow';
 declare const evaluate2: typeof evaluate1;
 declare const evaluate3: typeof evaluate1;
 
@@ -451,7 +451,7 @@ export const workflow = (problem: string) => Controlflow.from(problem)
 ```ts
 import { optimize } from '../multiple-evaluators/optimize.ts';
 import { evaluate as evaluate1 } from './evaluate.ts';
-import { Controlflow, Draft } from '@zimtsui/amenda';
+import { Controlflow, Draft } from '@zimtsui/catflow';
 declare const evaluate2: typeof evaluate1;
 declare const evaluate3: typeof evaluate1;
 
@@ -468,7 +468,7 @@ export const workflow = (problem: string) => Controlflow.from(problem)
 #### Evaluator
 
 ```ts
-import { Draft } from '@zimtsui/amenda';
+import { Draft } from '@zimtsui/catflow';
 import OpenAI from 'openai';
 declare const openai: OpenAI;
 
@@ -505,7 +505,7 @@ export async function *evaluate(problem: string, draft: Draft<string | Error>): 
 ```ts
 import { optimize } from './optimize.ts';
 import { evaluate as evaluate1 } from './evaluate.ts';
-import { Controlflow, Draft } from '@zimtsui/amenda';
+import { Controlflow, Draft } from '@zimtsui/catflow';
 declare const evaluate2: typeof evaluate1;
 declare const evaluate3: typeof evaluate1;
 
@@ -520,7 +520,7 @@ export const workflow = (problem: string) => Controlflow.from(problem)
 ### Progress Log
 
 ```ts
-import { Draft, Finalized, Controlflow } from '@zimtsui/amenda';
+import { Draft, Finalized, Controlflow } from '@zimtsui/catflow';
 
 function beginning(nextStage: string) {
 	return async function *<input>(input: input): Draft<input> {
@@ -565,7 +565,7 @@ export const workflow = (problem: string) => Controlflow.from(problem)
 .draft satisfies Draft<string>;
 ```
 
-## Explanation of Amenda in Mathematics
+## Explanation of Catflow in Mathematics
 
 ### Functor of Draft 草稿函子
 

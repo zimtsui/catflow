@@ -1,4 +1,4 @@
-import { Controlflow, Draft } from '@zimtsui/amenda';
+import { Controlflow, Draft } from '@zimtsui/catflow';
 declare function translateEnglishToChinese(englishText: string): Draft<string>;
 
 const cf = Controlflow.from('What does 1+1 equal to ?')

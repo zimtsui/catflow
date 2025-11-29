@@ -1,4 +1,4 @@
-import { Draft } from '@zimtsui/amenda';
+import { Draft } from '@zimtsui/catflow';
 import OpenAI from 'openai';
 declare const openai: OpenAI;
 
