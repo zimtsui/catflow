@@ -24,7 +24,7 @@ Almost all workflow orchestrators are based on Graph Theory, e.g. LangChain, Lan
 	- [Functor of Draft 草稿函子](#functor-of-draft-草稿函子)
 	- [Natural Transformations of Draft Functor 草稿函子的自然变换](#natural-transformations-of-draft-functor-草稿函子的自然变换)
 	- [Morphisms of Draft Category 草稿范畴的态射](#morphisms-of-draft-category-草稿范畴的态射)
-	- [Kleisli Category of Draft Monad 草稿单子的 Kleisli 范畴](#kleisli-category-of-draft-monad-草稿单子的-kleisli-范畴)
+	- [Kleisli Morphism of Draft Monad 草稿单子的 Kleisli 态射](#kleisli-morphism-of-draft-monad-草稿单子的-kleisli-态射)
 
 ## Rationale
 
@@ -608,20 +608,20 @@ export declare function to<t>(x: Draft<t>): Promise<t>;
 
 ### Morphisms of Draft Category 草稿范畴的态射
 
-An evaluator in the design pattern of Optimizer Evaluator is a morphism of the draft category.
+An stateful evaluator node is a morphism of the draft category.
 
-优化评估设计模式中的评估器是草稿范畴的态射。
+一个有状态评估器节点是草稿范畴的一个态射。
 
 ```ts
-export type Evaluator<i, o> = (optimization: Draft<i>) => Draft<o>;
+export type StatefulEvaluator<i, o> = (draft: Draft<i>) => Draft<o>;
 ```
 
-### Kleisli Category of Draft Monad 草稿单子的 Kleisli 范畴
+### Kleisli Morphism of Draft Monad 草稿单子的 Kleisli 态射
 
-An async generator function which returns a `Draft` is a morphism of the Kleisli category of draft monad.
+An stateless evaluator node is a morphism of the Kleisli category of draft monad.
 
-一个返回 `Draft` 的异步生成器函数是一个草稿单子的 Kleisli 范畴中的态射。
+一个无状态评估器节点是草稿单子的 Kleisli 范畴中的一个态射。
 
 ```ts
-export type Kleisli<i, o> = (i: i) => Draft<o>;
+export type StatelessEvaluator<i, o> = (i: i) => Draft<o>;
 ```
