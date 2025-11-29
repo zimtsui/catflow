@@ -18,7 +18,7 @@ Almost all workflow orchestrators are based on Graph Theory, e.g. LangChain, Lan
 	- [Design Pattern of *Optimizer - Opposable Evaluator*](#design-pattern-of-optimizer---opposable-evaluator)
 	- [Design Pattern of *Optimizer - Multiple Evaluators*](#design-pattern-of-optimizer---multiple-evaluators)
 	- [Design Pattern of *Optimizer - Multiple Stateful Evaluators*](#design-pattern-of-optimizer---multiple-stateful-evaluators)
-	- [Design Pattern of *Optimizer - Multiple Stateful Opposable Evaluators*](#design-pattern-of-optimizer---multiple-stateful-opposable-evaluators)
+	- [Design Pattern of *Optimizer - Multiple Opposable Evaluators*](#design-pattern-of-optimizer---multiple-opposable-evaluators)
 	- [Progress Log](#progress-log)
 - [Explanation of Amenda in Mathematics](#explanation-of-amenda-in-mathematics)
 	- [Functor of Draft 草稿函子](#functor-of-draft-草稿函子)
@@ -463,7 +463,7 @@ export const workflow = (problem: string) => Controlflow.from(problem)
 .draft satisfies Draft<string>;
 ```
 
-### Design Pattern of *Optimizer - Multiple Stateful Opposable Evaluators*
+### Design Pattern of *Optimizer - Multiple Opposable Evaluators*
 
 #### Evaluator
 
