@@ -4,7 +4,13 @@ declare const openai: OpenAI;
 
 export async function *optimize(problem: string): Draft<string> {
     const messages: OpenAI.ChatCompletionMessageParam[] = [
-        { role: 'system', content: 'Please solve math problems.' },
+        {
+            role: 'system',
+            content: [
+                'Please solve math problems.',
+                'Your answer will be evaluated and the feedback will be provided if the answer is rejected.'
+            ].join(' ')
+        },
         { role: 'user', content: problem },
     ];
     for (;;) try {

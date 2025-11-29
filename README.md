@@ -10,6 +10,7 @@ Almost all workflow orchestrators are based on Graph Theory, e.g. LangChain, Lan
 	- [Controlflow](#controlflow)
 - [Basic Orchestrations](#basic-orchestrations)
 	- [Conditional Workflow](#conditional-workflow)
+	- [Loop](#loop)
 	- [Design Pattern of *Optimizer Evaluator*](#design-pattern-of-optimizer-evaluator)
 	- [Parallel](#parallel)
 - [Advanced Orchestrations](#advanced-orchestrations)
@@ -25,9 +26,9 @@ Almost all workflow orchestrators are based on Graph Theory, e.g. LangChain, Lan
 
 ## Rationale
 
-Traditional workflows have almost every capability that AI workflows have, e.g. pipeline, parallelism, conditional, retry, etc. Popular AI workflow frameworks, e.g. LangChain, unify the APIs of various model suppliers. But in terms of orchestration, they are no different from the traditional ones.
+Traditional workflows have almost all capabilities that AI workflows have, e.g. pipeline, parallelism, conditional, retry, etc. Popular AI workflow frameworks, e.g. LangChain, unify the APIs of various model suppliers. But in terms of orchestration, they are no different from the traditional ones.
 
-So what is the essential difference between AI workflows and traditional workflows in terms of orchestration? The answer is about the mechanism of retry. In traditional workflows, if a node fails, or if the output of the node is rejected by the downstream, the node should typically retry by repeating the exact same operation with the same accuracy as the last attempt. While in AI workflows, when a stateful AI node should retry, it revises its former output with a much higher accuracy than the last attempt.
+So what is the essential difference between AI workflows and traditional workflows in terms of orchestration? The answer is about the mechanism of retry. In traditional workflows, if a node fails, or if the output of the node is rejected by the downstream, the node should typically retry by repeating the exact same operation with the same success rate as the last attempt. While in AI workflows, when a stateful AI node should retry, it revises its former output with a much higher success rate than the last attempt.
 
 ## Concept
 
@@ -163,6 +164,27 @@ const cf = Controlflow.from('1+1 等于几？')
 export default await cf.first();
 ```
 
+### Loop
+
+```ts
+import { Controlflow, type Draft } from '@zimtsui/amenda';
+
+declare const translateChineseToEnglish: (chineseText: string) => Draft<string>;
+declare const translateEnglishToRussian: (englishText: string) => Draft<string>;
+declare const translateRussianToChinese: (russianText: string) => Draft<string>;
+
+const cf = Controlflow.from('1+1 等于几？')
+	.then((chinese: string) => {
+		let cf = Controlflow.from(chinese);
+		for (let i = 1; i <= 3; i++) cf = cf
+			.then(translateChineseToEnglish)
+			.then(translateEnglishToRussian)
+			.then(translateRussianToChinese);
+		return cf.draft;
+	});
+export default await cf.first();
+```
+
 ### [Design Pattern of *Optimizer Evaluator*](https://www.anthropic.com/engineering/building-effective-agents)
 
 ```ts
@@ -220,7 +242,13 @@ declare const openai: OpenAI;
 
 export async function *optimize(problem: string): Draft<string> {
     const messages: OpenAI.ChatCompletionMessageParam[] = [
-        { role: 'system', content: 'Please solve math problems.' },
+        {
+            role: 'system',
+            content: [
+                'Please solve math problems.',
+                'Your answer will be evaluated and the feedback will be provided if the answer is rejected.'
+            ].join(' ')
+        },
         { role: 'user', content: problem },
     ];
     for (;;) try {
@@ -331,7 +359,14 @@ declare const openai: OpenAI;
 
 export async function *optimize(problem: string): Draft<string | Error> {
     const messages: OpenAI.ChatCompletionMessageParam[] = [
-        { role: 'system', content: 'Please solve math problems.' },
+        {
+            role: 'system',
+            content: [
+                'Please solve math problems.',
+                'Your answer will be evaluated and the feedback will be provided if the answer is rejected.',
+                'If you insist your answer, print only `OPPOSE` to oppose the rejection, or revise your answer.',
+            ].join(' '),
+        },
         { role: 'user', content: problem },
     ];
     for (;;) {
@@ -361,22 +396,22 @@ import OpenAI from 'openai';
 declare const openai: OpenAI;
 
 export async function *evaluate(problem: string, draft: Draft<string | Error>): Draft<string | Error> {
-	let answer = await draft.next().then(r => r.value) as string;
+	let input = await draft.next().then(r => r.value);
+	let answer = input as string;
 	const messages: OpenAI.ChatCompletionMessageParam[] = [
-		{ role: 'system', content: 'Please examine the given answer of the given math problem. Print `ACCEPT` if it is correct.' },
+		{ role: 'system', content: 'Please examine the given answer of the given math problem. Print only `ACCEPT` if it is correct.' },
 		{ role: 'user', content: `Problem: ${problem}\n\nAnswer: ${answer}` },
 	];
-	for (let evaluating = true;;) try {
+	for (let evaluating = true;; evaluating = true) try {
 		const completion = await openai.chat.completions.create({ model: 'gpt-4o', messages });
 		messages.push(completion.choices[0]!.message);
-		if (completion.choices[0]!.message.content === 'ACCEPT') {}
+		if (completion.choices[0]!.message.content === 'ACCEPT') return yield (evaluating = false, answer);
 		else throw new Error(completion.choices[0]!.message.content!);
-		evaluating = false;
-		return yield answer;
 	} catch (e) {
-		const input = await draft.throw(e as Error).then(r => r.value);
-		if (input instanceof Error && !evaluating) return yield input;
-		evaluating = true;
+		for (;;) try {
+			input = await draft.throw(e as Error).then(r => r.value);
+			if (input instanceof Error && !evaluating) return yield input; else break;
+		} catch (newe) { e = newe; }
 		if (input instanceof Error) messages.push({
 			role: 'user',
 			content: `Your rejection is opposed: ${input.message}\n\nPlease examine it again.`,
