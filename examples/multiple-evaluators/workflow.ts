@@ -6,7 +6,7 @@ declare const evaluate3: typeof evaluate1;
 
 export const workflow = (problem: string) => Controlflow.from(problem)
     .then(optimize)
-    .then(draft => evaluate1(problem, draft))
-    .then(draft => evaluate2(problem, draft))
-    .then(draft => evaluate3(problem, draft))
+    .then(answer => evaluate1(problem, answer))
+    .then(answer => evaluate2(problem, answer))
+    .then(answer => evaluate3(problem, answer))
 .draft satisfies Draft<string>;
