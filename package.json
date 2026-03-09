@@ -7,7 +7,7 @@
     "orchestrator",
     "typescript"
   ],
-  "version": "0.0.16",
+  "version": "0.0.17",
   "exports": {
     ".": "./build/exports.js",
     "./staging": "./build/staging.js"
