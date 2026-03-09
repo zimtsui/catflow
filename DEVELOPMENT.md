@@ -2,7 +2,7 @@
 
 ## Profunctor
 
-为什么不设计成如下的逆协变函子？
+为什么不设计成如下的 profunctor ？
 
 ```ts
 export type Draft<feedback, final> = AsyncGenerator<final, never, feedback>;

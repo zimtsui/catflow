@@ -1,1 +1,1 @@
-export class Finalized extends Error {}
+export class Finalized {}

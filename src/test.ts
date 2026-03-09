@@ -4,14 +4,6 @@
 import test from 'ava';
 import { Draft, Controlflow, Finalized } from './exports.ts';
 
-// Test Finalized exception
-test('Finalized extends Error', t => {
-	const finalized = new Finalized('test message');
-	t.true(finalized instanceof Error);
-	t.true(finalized instanceof Finalized);
-	t.is(finalized.message, 'test message');
-});
-
 // --- Draft Tests ---
 
 test('Draft.eta creates a draft that yields a value then completes', async t => {

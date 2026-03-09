@@ -15,21 +15,21 @@
     "url": "https://github.com/zimtsui/catflow.git"
   },
   "scripts": {
-    "test": "npm run build && ava",
+    "test": "npm run build && ava ./build/test.js",
     "build": "tsc -b ./src/tsconfig.json",
     "clean": "rm -rf ./build"
   },
   "author": "Zim",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^22.15.30",
-    "ava": "^6.4.1",
-    "openai": "^5.10.2"
+    "@types/node": "^22.19.15",
+    "ava": "^7.0.0",
+    "openai": "^6.27.0"
   },
   "ava": {
-    "files": [
-      "./build/test.js"
-    ],
     "failWithoutAssertions": false
+  },
+  "peerDependencies": {
+    "@zimtsui/typelog": "^0.0.20"
   }
 }
