@@ -8,7 +8,10 @@
     "typescript"
   ],
   "version": "0.0.15",
-  "exports": "./build/exports.js",
+  "exports": {
+    ".": "./build/exports.js",
+    "./staging": "./build/staging.js"
+  },
   "type": "module",
   "repository": {
     "type": "git",
