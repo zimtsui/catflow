@@ -16,7 +16,7 @@ export class Controlflow<o = void> {
 		return (Controlflow.from<void>)();
 	}
 
-	public first(): Promise<o> {
+	public first(): Promise<Awaited<o>> {
 		return Draft.to(this.draft);
 	}
 
@@ -28,11 +28,20 @@ export class Controlflow<o = void> {
 		return new Controlflow(Draft.mu(Draft.map(f)(this.draft)));
 	}
 
-	public transform<nexto>(f: (o: o) => Promise<nexto>): Controlflow<nexto> {
-		return this.then(o => Draft.from(f(o)));
+	/**
+	 * @param f is allowed to throw synchronously.
+	 */
+	public transform<nexto>(f: (o: o) => PromiseLike<nexto>): Controlflow<nexto> {
+		const af = async (o: o) => f(o);
+		return this.then(o => Draft.from(af(o)));
 	}
 
 	public map<nexto>(f: (o: o) => nexto): Controlflow<nexto> {
 		return this.pipe(Draft.map(f));
+	}
+
+	public through(f: (o: o) => void): Controlflow<o> {
+		const af = async (o: o) => f(o);
+		return this.transform(o => af(o).then(() => o));
 	}
 }

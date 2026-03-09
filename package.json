@@ -34,6 +34,6 @@
     "failWithoutAssertions": false
   },
   "peerDependencies": {
-    "@zimtsui/typelog": "^0.0.21"
+    "@zimtsui/typelog": "^0.0.22"
   }
 }

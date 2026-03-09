@@ -1,10 +1,10 @@
-import { Finalized } from './exceptions.ts';
 
+export const FINALIZED = Symbol();
 
 /**
  * Draft functor
  */
-export type Draft<t> = AsyncGenerator<t, never, never>;
+export type Draft<t> = AsyncGenerator<Awaited<t>, never, never>;
 export namespace Draft {
 
 	/**
@@ -52,12 +52,12 @@ export namespace Draft {
 	/**
 	 * Natural transformation from Draft to Promise
 	 */
-	export async function to<t>(draft: Draft<t>): Promise<t> {
-		return await draft.next()
+	export function to<t>(draft: Draft<t>): Promise<Awaited<t>> {
+		return draft.next()
 			.then(r => r.value)
 			.finally(() => draft
-				.throw(new Finalized())
-				.catch(e => e instanceof Finalized ? Promise.resolve() : Promise.reject(e))
+				.throw(FINALIZED)
+				.catch(e => e === FINALIZED ? Promise.resolve() : Promise.reject(e))
 			);
 	}
 
