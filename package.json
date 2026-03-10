@@ -7,7 +7,7 @@
     "orchestrator",
     "typescript"
   ],
-  "version": "0.0.18",
+  "version": "0.0.19",
   "exports": "./build/exports.js",
   "type": "module",
   "repository": {
