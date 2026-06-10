@@ -10,12 +10,14 @@
   "version": "0.0.21",
   "exports": "./build/exports.js",
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zimtsui/catflow.git"
   },
   "scripts": {
-    "test": "ava ./build/test.js",
     "build": "tsc -b ./src/tsconfig.json",
     "clean": "rm -rf ./build",
     "prepublishOnly": "npm run clean && npm run build"
@@ -23,14 +25,8 @@
   "author": "Zim",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^22.19.15",
-    "ava": "^7.0.0",
-    "openai": "^6.27.0"
-  },
-  "ava": {
-    "failWithoutAssertions": false
-  },
-  "peerDependencies": {
-    "@opentelemetry/api": "^1.9.0"
+    "@types/node": "^24.13.1",
+    "openai": "^6.27.0",
+    "typescript": "^6.0.3"
   }
 }

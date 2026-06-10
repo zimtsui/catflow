@@ -1,21 +1,21 @@
 import { Draft, Finalized, Controlflow } from '@zimtsui/catflow';
 
 function beginning(nextStage: string) {
-	return async function *<input>(input: input): Draft<input> {
-		if (nextStage) console.log(nextStage);
-		return yield input;
-	}
+    return async function *<input>(input: input): Draft<input> {
+        if (nextStage) console.log(nextStage);
+        return yield input;
+    }
 }
 function ending(lastStage: string) {
-	return async function *<input>(input: input): Draft<input> {
-		try {
-			return yield input;
-		} catch (e) {
-			if (e instanceof Finalized) {}
-			else if (lastStage) console.log(lastStage);
-			throw e;
-		}
-	}
+    return async function *<input>(input: input): Draft<input> {
+        try {
+            return yield input;
+        } catch (e) {
+            if (e instanceof Finalized) {}
+            else if (lastStage) console.log(lastStage);
+            throw e;
+        }
+    }
 }
 declare const optimize: (problem: string) => Draft<string>;
 declare const evaluate1: (problem: string, draft: Draft<string>) => Draft<string>;

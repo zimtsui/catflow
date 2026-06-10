@@ -1,5 +1,5 @@
 
-export const FINALIZED = Symbol();
+export class Finalized extends Error {}
 
 /**
  * Draft functor
@@ -56,8 +56,8 @@ export namespace Draft {
 		return draft.next()
 			.then(r => r.value)
 			.finally(() => draft
-				.throw(FINALIZED)
-				.catch(e => e === FINALIZED ? Promise.resolve() : Promise.reject(e))
+				.throw(new Finalized())
+				.catch(e => e instanceof Finalized ? Promise.resolve() : Promise.reject(e))
 			);
 	}
 
